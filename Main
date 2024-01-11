@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+from math import atan2, degrees, pi
 
 #from bullet import Bullet
 # Initialize Pygame
@@ -10,12 +11,16 @@ health = 200
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 x = 20
+enemies = []
+enemy_speed = 7
+amount = 1
 enemysize = 50, 50
 WHITE = (255, 255, 255)
 RED = (255, 25, 0)
 returning = False
 enemy_x = 20
-enemy_y = 500
+enemy_y = 300
+
 healthbarx = 20
 enemyhealth = 100
 healthbarsizex = 200
@@ -42,15 +47,27 @@ bullet_list2 = []
 clock = pygame.time.Clock()
 frames = 0
 frames_cooldown = 0
+frames2 = 0
 # Main game loop
 
 
 def firebulletenemy():
-        bullet_list2.append([enemy_x, enemy_y, 0])
-
-
+    angle = math.atan2(enemy_x - player_pos[0], enemy_y - player_pos[1])
+    degrees = math.degrees(angle)
+    if frames2 > 0.5:
+        bullet_list2.append([enemy_x, enemy_y, degrees])
 while True:
-    
+    frames2 += 1/60 
+    if frames2 > 0.55:
+        frames2 = 0
+    if player_pos[0] <= -49:
+        player_pos[0] = 860
+    elif player_pos[0]>= 860:
+        player_pos[0] = -49 
+    elif player_pos[1]>= 635:
+        player_pos[1] = -91
+    elif player_pos[1] <= -91:
+        player_pos[1] = 635
     playerhitbox = pygame.draw.rect(screen, WHITE, (player_pos[0], player_pos[1], 40, 60))
 
     bulletamount = len(bullet_list)
@@ -63,6 +80,7 @@ while True:
     firebulletenemy()
     if enemyhealth <= 0:
         enemysize = 0, 0
+        amount = 2
     if enemy_x < 500 and returning == False:
          enemy_x += 1.2
     else:
@@ -140,6 +158,7 @@ while True:
             bullet2 = pygame.draw.rect(screen, (0, 255, 0), (bullet2[0], bullet2[1], 5, 5))
             if pygame.Rect.colliderect(bullet2, playerhitbox):
                 healthbarsizex -= 1
+
 
 
 

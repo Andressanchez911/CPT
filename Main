@@ -1,7 +1,6 @@
 import pygame
 import sys
 import math
-from math import atan2, degrees, pi
 
 #from bullet import Bullet
 # Initialize Pygame
@@ -20,7 +19,10 @@ RED = (255, 25, 0)
 returning = False
 enemy_x = 20
 enemy_y = 300
-
+font = pygame.font.Font('freesansbold.ttf', 32)
+text = font.render('GeeksForGeeks', True, (0, 0, 0))
+textRect = text.get_rect()
+textRect.center = (400, 500)
 healthbarx = 20
 enemyhealth = 100
 healthbarsizex = 200
@@ -43,6 +45,7 @@ player_speed = 0
 bullet_speed = 7
 bullet_list = []
 bullet_list2 = []
+
 # Clock to control the frame rate
 clock = pygame.time.Clock()
 frames = 0
@@ -68,14 +71,14 @@ while True:
         player_pos[1] = -91
     elif player_pos[1] <= -91:
         player_pos[1] = 635
-    playerhitbox = pygame.draw.rect(screen, WHITE, (player_pos[0], player_pos[1], 40, 60))
 
     bulletamount = len(bullet_list)
 
     
     y = 200
-
+    playerhitbox = pygame.draw.rect(screen, WHITE, (player_pos[0] - 20, player_pos[1] - 20, 40, 60))
     screen.blit(background_image, (0, 0))
+    
     enemy = pygame.draw.rect(screen, RED, (enemy_x, enemy_y, enemysize[0], enemysize[1]))
     firebulletenemy()
     if enemyhealth <= 0:
@@ -118,12 +121,13 @@ while True:
     # Update player position based on angle
     player_pos[0] += player_speed * math.sin(math.radians(-player_angle))
     player_pos[1] -= player_speed * math.cos(math.radians(-player_angle))
-
+    
     # Shoot bullets
     if keys[pygame.K_SPACE] and frames >= 0.1:
-          if len(bullet_list) <= 9 and frames >= 0.5:
+          if len(bullet_list) <= 9 and frames >= 0.2:
             frames = 0
             bullet_list.append([player_pos[0], player_pos[1], player_angle])
+            enemies.append([player_pos[0], player_pos[1], player_angle])
             print(len(bullet_list))
           
 
@@ -139,6 +143,9 @@ while True:
     for bullet2 in bullet_list2:
         bullet2[0] += bullet_speed * math.sin(math.radians(-bullet2[2]))
         bullet2[1] -= bullet_speed * math.cos(math.radians(-bullet2[2]))
+    for enemy2 in enemies:
+        enemy2[0] += bullet_speed * math.sin(math.radians(-enemy2[2]))
+        enemy2[1] -= bullet_speed * math.cos(math.radians(-enemy2[2]))
     # Remove bullets that go off-screen
     bullet_list = [bullet for bullet in bullet_list if 0 < bullet[0] < WIDTH and 0 < bullet[1] < HEIGHT]
     bullet_list2 = [bullet2 for bullet2 in bullet_list2 if 0 < bullet2[0] < WIDTH and 0 < bullet2[1] < HEIGHT]
@@ -150,15 +157,15 @@ while True:
     screen.blit(rotated_player_image, player_rect.topleft)
 
     for bullet in bullet_list:
-        bullet = pygame.draw.rect(screen, WHITE, (bullet[0], bullet[1], 5, 5))
-        if pygame.Rect.colliderect(bullet, enemy) and enemyhealth > 0:
-            enemyhealth -= 5
+        bullethitbox = pygame.draw.rect(screen, WHITE, (bullet[0], bullet[1], 5, 5))
+        if pygame.Rect.colliderect(bullethitbox, enemy) and enemyhealth > 0:
+            enemyhealth -= 20
+            bullet_list.remove(bullet)
     for bullet2 in bullet_list2:
         if enemyhealth > 0:
             bullet2 = pygame.draw.rect(screen, (0, 255, 0), (bullet2[0], bullet2[1], 5, 5))
             if pygame.Rect.colliderect(bullet2, playerhitbox):
-                healthbarsizex -= 1
-
+                 healthbarsizex -= 1
 
 
 

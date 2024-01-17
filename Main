@@ -2,6 +2,19 @@ import pygame
 import sys
 import math
 
+
+
+# Create the main window
+
+# Create a button and attach the on_button_click function to its command
+
+# Pack the button into the window
+# button.pack()
+
+# Start the Tkinter event loop
+
+
+
 #from bullet import Bullet
 # Initialize Pygame
 pygame.init()
@@ -28,6 +41,7 @@ enemyhealth = 100
 healthbarsizex = 200
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen2 = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Shooter")
 # Load images
 background_image = pygame.image.load("1920x1080.jpg")
@@ -52,7 +66,21 @@ frames = 0
 frames_cooldown = 0
 frames2 = 0
 # Main game loop
-
+clicked = False
+while clicked == False:
+    pos = pygame.mouse.get_pos()
+    screen.blit(screen, (0, 0))
+    button = pygame.draw.rect(screen, RED, (20, 300, 50, 100))
+    text = pygame.textlabel("Start")
+    pygame.display.flip()
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if button.collidepoint(pos):
+                clicked = True
 
 def firebulletenemy():
     angle = math.atan2(enemy_x - player_pos[0], enemy_y - player_pos[1])

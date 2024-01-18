@@ -4,17 +4,6 @@ import math
 
 
 
-# Create the main window
-
-# Create a button and attach the on_button_click function to its command
-
-# Pack the button into the window
-# button.pack()
-
-# Start the Tkinter event loop
-
-
-
 #from bullet import Bullet
 # Initialize Pygame
 pygame.init()
@@ -29,6 +18,7 @@ amount = 1
 enemysize = 50, 50
 WHITE = (255, 255, 255)
 RED = (255, 25, 0)
+BLACK = (0, 0, 0)
 returning = False
 enemy_x = 20
 enemy_y = 300
@@ -44,8 +34,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen2 = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Shooter")
 # Load images
+menu_background_image = pygame.image.load("AmongusBackground.jpg")
 background_image = pygame.image.load("1920x1080.jpg")
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+menu_background_image = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))
 Enemy_image = pygame.Surface((50, 50), pygame.SRCALPHA)
 player_image = pygame.Surface((50, 50), pygame.SRCALPHA)
 pygame.draw.polygon(player_image, WHITE, [(25, 0), (50, 50), (25, 40), (0, 50)])
@@ -66,21 +58,40 @@ frames = 0
 frames_cooldown = 0
 frames2 = 0
 # Main game loop
+
+
+# Set up the screen
+pygame.display.set_caption("Space Shooter")
+
+# Create a font object
+font = pygame.font.Font(None, 100)
+
 clicked = False
-while clicked == False:
+while not clicked:
     pos = pygame.mouse.get_pos()
-    screen.blit(screen, (0, 0))
-    button = pygame.draw.rect(screen, RED, (20, 300, 50, 100))
-    text = pygame.textlabel("Start")
-    pygame.display.flip()
+    screen.fill((0, 0, 0))  # Fill the screen with Black
+    # Render the text
     
+    screen.blit(menu_background_image, (0, 0))
+    text = font.render("Start", True, BLACK)
+    button = pygame.draw.rect(screen, RED, (275, 200, 250, 100))
+    text_rect = text.get_rect(center=button.center)
+    screen.blit(text, text_rect)
+    hover = button.collidepoint(pos)
+    if hover == True:
+        button = pygame.draw.rect(screen, WHITE, (275, 200, 250, 100))
+
+    pygame.display.flip()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if button.collidepoint(pos):
-                clicked = True
+                clicked = True  # Set clicked to True when the button is clicked
+        
+
 
 def firebulletenemy():
     angle = math.atan2(enemy_x - player_pos[0], enemy_y - player_pos[1])

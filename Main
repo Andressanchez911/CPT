@@ -3,7 +3,263 @@ import sys
 import math
 
 
+import pygame
+import sys
+import math
+import random
 
+pygame.init()
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+x = 20
+enemies = []
+enemy_speed = 7
+amount = 1
+enemysize = 50, 50
+WHITE = (255, 255, 255)
+RED = (255, 25, 0)
+returning = False
+returning2 = False
+enemy_x = 20
+player2health = 200
+enemy_y = 300
+font = pygame.font.Font('freesansbold.ttf', 32)
+text = font.render('GeeksForGeeks', True, (0, 0, 0))
+menu_background_image = pygame.image.load("amongusbackground.jpg")
+menu_background_image = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))
+healthbarx = 20
+enemyhealth = 100
+healthbarsizex = 200
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+screen2 = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Space Shooter")
+background_image = pygame.image.load("1920x1080.jpg")
+background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+Enemy_image = pygame.Surface((50, 50), pygame.SRCALPHA)
+player_image = pygame.Surface((50, 50), pygame.SRCALPHA)
+player2_image = pygame.Surface((50, 50), pygame.SRCALPHA)
+player = pygame.draw.polygon(player_image, WHITE, [(25, 0), (50, 50), (25, 40), (0, 50)])
+player2 = pygame.draw.polygon(player2_image, WHITE, [(25, 0), (50, 50), (25, 40), (0, 50)])
+font = pygame.font.Font(None, 58) 
+player_pos = [WIDTH // 2, HEIGHT - 70]
+player2_pos = [WIDTH // 2 + 100, HEIGHT - 70 + 20]
+
+player_angle = 0
+player_speed = 0
+playerhealth = 200
+player_angle2 = 0
+player_speed2 = 0
+bullet_speed = 7
+bullet_list = []
+bullet_list2 = []
+positionchange = True
+clock = pygame.time.Clock()
+frames = 0
+frames_cooldown = 0
+frames2 = 0
+points=0
+starting = True
+
+def mainmenu():
+        
+    clicked = False
+    while clicked == False:
+        
+        pos = pygame.mouse.get_pos()
+        screen.fill((0, 0, 0))  # Fill the screen with Black
+        # Render the text
+        button = pygame.draw.rect(screen, RED, (275, 200, 250, 100))
+        button2 = pygame.draw.rect(screen, RED, (275, 400, 250, 100))
+        screen.blit(menu_background_image, (0, 0))
+        text = font.render("singleplayer", True, WHITE)
+        text2 = font.render("multiplayer", True, WHITE)
+        hover = button.collidepoint(pos)
+        hover2 = button2.collidepoint(pos)
+        if hover == True:
+            outline = pygame.draw.rect(screen, WHITE, (270, 195, 260, 110))
+        if hover2 == True:
+            outline2 = pygame.draw.rect(screen, WHITE, (270, 395, 260, 110))
+        text_rect = text.get_rect(center=button.center)
+        text_rect2 = text2.get_rect(center=button2.center)
+        button = pygame.draw.rect(screen, RED, (275, 200, 250, 100))
+        button2 = pygame.draw.rect(screen, RED, (275, 400, 250, 100))
+        screen.blit(text, text_rect)
+        screen.blit(text2, text_rect2)
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if button2.collidepoint(pos):
+                    clicked = True
+                    global singleplayer 
+                    singleplayer = False            
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if button.collidepoint(pos):
+                    clicked = True
+                    singleplayer = True
+                    
+def firebulletenemy():
+    angle = math.atan2(enemy_x - player_pos[0], enemy_y - player_pos[1])
+    degrees = math.degrees(angle)
+    if frames2 > 0.5:
+        bullet_list2.append([enemy_x, enemy_y, degrees])
+while True:
+    print(player_pos)
+    if starting ==  True:
+        starting = False
+        mainmenu()
+    frames2 += 1/60 
+    if frames2 > 0.55:
+        frames2 = 0
+    if player_pos[0] <= -49:
+        player_pos[0] = 860
+    elif player_pos[0]>= 860:
+        player_pos[0] = -49 
+    elif player_pos[1]>= 635:
+        player_pos[1] = -91
+    elif player_pos[1] <= -91:
+        player_pos[1] = 635
+    if player2_pos[0] <= -49:
+        player2_pos[0] = 860
+    elif player2_pos[0]>= 860:
+        player2_pos[0] = -49 
+    elif player2_pos[1]>= 635:
+        player2_pos[1] = -91
+    elif player2_pos[1] <= -91:
+        player2_pos[1] = 635
+    bulletamount = len(bullet_list)
+
+    
+    y = 200
+    playerhitbox = pygame.draw.rect(screen, WHITE, (player_pos[0] - 20, player_pos[1] - 20, 40, 60))
+    playerhitbox2 = pygame.draw.rect(screen, WHITE, (player2_pos[0] - 20, player2_pos[1] - 20, 40, 60))
+
+    screen.blit(background_image, (0, 0))
+    textRect = text.get_rect()
+    textRect.center = (WIDTH / 2 + 200, HEIGHT - 500)
+    screen.blit(font.render(str(points), True, WHITE), textRect)
+    if singleplayer == True:
+        player2_pos = ([-48, 634])
+        enemy = pygame.draw.rect(screen, RED, (enemy_x, enemy_y, enemysize[0], enemysize[1]))
+        firebulletenemy()
+        if enemyhealth <= 0:
+            points += 1
+            enemyhealth = 200
+            enemy_x = random.randrange(-40, 860)
+            enemy_y = random.randrange(-20, 600)
+        if enemy_x < 500 and returning == False:
+            enemy_x += 1.2
+        else:
+            returning = True
+            enemy_x -= 1.2 
+            if enemy_x <= 20:
+                returning = False 
+    elif singleplayer == False:
+        if player2health <= 0:
+            player2health = 200
+            player_pos = 54, 326
+            player2_pos = 758, 326
+
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            player_angle2 += 5
+        if keys[pygame.K_RIGHT]:
+            player_angle2 -= 5
+        if keys[pygame.K_UP]:
+            player_speed2 = 5
+        if keys[pygame.K_DOWN]:
+            player_speed2 = -2
+        elif keys != pygame.K_UP and player_speed2 >= 0.1:
+            player_speed2 -= 0.1
+        elif keys != pygame.K_DOWN and player_speed2 < 0:
+            player_speed2 += 0.1
+        if keys[pygame.K_k]:
+            bullet_list2.append([player2_pos[0], player2_pos[1], player_angle2])
+    player2_pos[0] += player_speed2 * math.sin(math.radians(-player_angle2))
+    player2_pos[1] -= player_speed2 * math.cos(math.radians(-player_angle2))
+    healthbar = pygame.draw.rect(screen, RED, (healthbarx, 20, healthbarsizex, 20))
+    if healthbarsizex <= 0 and singleplayer == True:  
+        playerhealth = 200
+        points = 0      
+        mainmenu()
+        
+    frames += 1/60
+    frames_cooldown += 1/60
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    player_pos[0] += player_speed * math.sin(math.radians(-player_angle))
+    player_pos[1] -= player_speed * math.cos(math.radians(-player_angle))
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a]:
+        player_angle += 5
+    if keys[pygame.K_d]:
+        player_angle -= 5
+    if keys[pygame.K_w]:
+        player_speed = 5
+    if keys[pygame.K_s]:
+        player_speed = -2
+    elif keys != pygame.K_w and player_speed >= 0.1:
+        player_speed -= 0.1
+    elif keys != pygame.K_s and player_speed < 0:
+        player_speed += 0.1 
+    if keys[pygame.K_SPACE] and frames >= 0.1:
+          if len(bullet_list) <= 9 and frames >= 0.2:
+            frames = 0
+            bullet_list.append([player_pos[0], player_pos[1], player_angle])
+            print(len(bullet_list))
+          
+
+
+    if frames_cooldown > 4.5:
+        frames_cooldown = 0
+
+    for bullet in bullet_list:
+        bullet[0] += bullet_speed * math.sin(math.radians(-bullet[2]))
+        bullet[1] -= bullet_speed * math.cos(math.radians(-bullet[2]))
+    for bullet2 in bullet_list2:
+        bullet2[0] += bullet_speed * math.sin(math.radians(-bullet2[2]))
+        bullet2[1] -= bullet_speed * math.cos(math.radians(-bullet2[2]))
+    for enemy2 in enemies:
+        enemy2[0] += bullet_speed * math.sin(math.radians(-enemy2[2]))
+        enemy2[1] -= bullet_speed * math.cos(math.radians(-enemy2[2]))
+    bullet_list = [bullet for bullet in bullet_list if 0 < bullet[0] < WIDTH and 0 < bullet[1] < HEIGHT]
+    bullet_list2 = [bullet2 for bullet2 in bullet_list2 if 0 < bullet2[0] < WIDTH and 0 < bullet2[1] < HEIGHT]
+
+
+    rotated_player_image = pygame.transform.rotate(player_image, player_angle)
+    player_rect = rotated_player_image.get_rect(center=(player_pos[0], player_pos[1]))
+    rotated_player_image2 = pygame.transform.rotate(player2_image, player_angle2)
+    player_rect2 = rotated_player_image2.get_rect(center=(player2_pos[0], player2_pos[1]))
+    screen.blit(rotated_player_image, player_rect.topleft)
+    screen.blit(rotated_player_image2, player_rect2.topleft)
+
+    for bullet in bullet_list:
+        bullethitbox = pygame.draw.rect(screen, WHITE, (bullet[0], bullet[1], 5, 5))
+        if singleplayer == True:
+            if pygame.Rect.colliderect(bullethitbox, enemy) and enemyhealth > 0:
+                enemyhealth -= 20
+                bullet_list.remove(bullet)
+        elif singleplayer == False:
+            if pygame.Rect.colliderect(bullethitbox, playerhitbox2) and enemyhealth > 0:
+                player2health -= 20
+                bullet_list.remove(bullet)
+    for bullet2 in bullet_list2:
+        if enemyhealth > 0:
+            bullet2 = pygame.draw.rect(screen, (0, 255, 0), (bullet2[0], bullet2[1], 5, 5))
+            if pygame.Rect.colliderect(bullet2, playerhitbox):
+                 healthbarsizex -= 1
+    pygame.display.flip()
+
+    clock.tick(FPS)
 #from bullet import Bullet
 # Initialize Pygame
 pygame.init()

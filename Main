@@ -25,6 +25,8 @@ menu_background_image = pygame.transform.scale(menu_background_image, (WIDTH, HE
 healthbarx = 20
 enemyhealth = 100
 healthbarsizex = 200
+healthbar2sizex = 200
+healthbar2x = 500
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 screen2 = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -53,6 +55,7 @@ frames = 0
 frames_cooldown = 0
 frames2 = 0
 points=0
+points2=0
 starting = True
 
 def mainmenu():
@@ -102,7 +105,7 @@ def firebulletenemy():
     if frames2 > 0.5:
         bullet_list2.append([enemy_x, enemy_y, degrees])
 while True:
-    print(player_pos)
+    
     if starting ==  True:
         starting = False
         mainmenu()
@@ -134,7 +137,10 @@ while True:
 
     screen.blit(background_image, (0, 0))
     textRect = text.get_rect()
+    textRect2 = text.get_rect()
+    textRect2.center = 200, 100
     textRect.center = (WIDTH / 2 + 200, HEIGHT - 500)
+
     screen.blit(font.render(str(points), True, WHITE), textRect)
     if singleplayer == True:
         player2_pos = ([-48, 634])
@@ -153,17 +159,33 @@ while True:
             if enemy_x <= 20:
                 returning = False 
     elif singleplayer == False:
+        if points == 10:
+            print("Player 1 wins!")
+            points = 0
+            mainmenu()
+        elif points2 == 10:
+            points2 = 0
+            print("player 2 wins!")
+            mainmenu()
+        screen.blit(font.render(str(points2), True, WHITE), textRect2)
+        healthbar2 = pygame.draw.rect(screen, RED, (healthbar2x, 20, healthbar2sizex, 20))
+        healthbar2sizex = player2health
         if player2health <= 0:
             player2health = 200
-            player_pos = 54, 326
-            player2_pos = 758, 326
+            healthbarsizex = 200
+            points2 += 1
+            player_pos[0] = 54
+            player_pos[1] = 326
+            player2_pos[0] = 758
+            player2_pos[1] = 326
 
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            player_angle2 += 5
         if keys[pygame.K_RIGHT]:
             player_angle2 -= 5
+        if keys[pygame.K_LEFT]:
+            player_angle2 += 5
+      
         if keys[pygame.K_UP]:
             player_speed2 = 5
         if keys[pygame.K_DOWN]:
@@ -173,14 +195,26 @@ while True:
         elif keys != pygame.K_DOWN and player_speed2 < 0:
             player_speed2 += 0.1
         if keys[pygame.K_k]:
-            bullet_list2.append([player2_pos[0], player2_pos[1], player_angle2])
+            if frames2 >= 0.2:
+                bullet_list2.append([player2_pos[0], player2_pos[1], player_angle2])
     player2_pos[0] += player_speed2 * math.sin(math.radians(-player_angle2))
     player2_pos[1] -= player_speed2 * math.cos(math.radians(-player_angle2))
     healthbar = pygame.draw.rect(screen, RED, (healthbarx, 20, healthbarsizex, 20))
-    if healthbarsizex <= 0 and singleplayer == True:  
-        healthbarsizex = 200
-        points = 0      
-        mainmenu()
+    if healthbarsizex <= 0:
+        if singleplayer == True:  
+            healthbarsizex = 200
+            points = 0      
+            mainmenu()
+        else:
+            points += 1
+            healthbarsizex = 200
+            player2health = 200
+            player_pos[0] = 54
+            player_pos[1] = 326
+            player2_pos[0] = 758
+            player2_pos[1] = 326
+
+
         
     frames += 1/60
     frames_cooldown += 1/60

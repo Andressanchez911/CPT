@@ -1,9 +1,122 @@
+import pygame
+from Network import Network
+
+width = 500
+height = 500
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Client")
+
+clientNumber = 0
+
+
+class Player():
+    def __init__(self, x, y, width, height, color):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.rect = (x,y,width,height)
+        self.vel = 3
+
+    def draw(self, win):
+        pygame.draw.rect(win, self.color, self.rect)
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_LEFT]:
+            self.x -= self.vel
+
+        if keys[pygame.K_RIGHT]:
+            self.x += self.vel
+
+        if keys[pygame.K_UP]:
+            self.y -= self.vel
+
+        if keys[pygame.K_DOWN]:
+            self.y += self.vel
+
+        self.update()
+
+    def update(self):
+        self.rect = (self.x, self.y, self.width, self.height)
+
+
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+
+def redrawWindow(win,player, player2):
+    win.fill((255,255,255))
+    player.draw(win)
+    player2.draw(win)
+    pygame.display.update()
+
+
+def main():
+    run = True
+    n = Network()
+    startPos = read_pos(n.getPos())
+    p = Player(startPos[0],startPos[1],100,100,(0,255,0))
+    p2 = Player(0,0,100,100,(255,0,0))
+    clock = pygame.time.Clock()
+
+    while run:
+        clock.tick(60)
+        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
+        p2.x = p2Pos[0]
+        p2.y = p2Pos[1]
+        p2.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+
+        p.move()
+        redrawWindow(win, p, p2)
+
+main()
+------------------------------------------
+import socket
+
+
+class Network:
+    def __init__(self):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server = "192.168.56.1"
+        self.port = 5555
+        self.addr = (self.server, self.port)
+        self.pos = self.connect()
+
+    def getPos(self):
+        return self.pos
+
+    def connect(self):
+        try:
+            self.client.connect(self.addr)
+            return self.client.recv(2048).decode()
+        except:
+            pass
+
+    def send(self, data):
+        try:
+            self.client.send(str.encode(data))
+            return self.client.recv(2048).decode()
+        except socket.error as e:
+            print(e)
+---------------------------------------------
 import socket
 from _thread import *
 import sys
 
-# Set the server address and port
-server = "127.0.0.1"  # Replace with your actual IP address or hostname
+server = "192.168.56.1"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,34 +124,52 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket.error as e:
-    print(str(e))
-s.listen(5)  # Adjust the number based on your requirements
+    str(e)
+
+s.listen(2)
 print("Waiting for a connection, Server Started")
-def threaded_client(conn):
-    conn.send(str.encode("Connected"))
+
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+pos = [(0,0),(100,100)]
+
+def threaded_client(conn, player):
+    conn.send(str.encode(make_pos(pos[player])))
     reply = ""
     while True:
         try:
-            data = conn.recv(2048)
-            reply = data.decode("utf-8")
+            data = read_pos(conn.recv(2048).decode())
+            pos[player] = data
 
             if not data:
                 print("Disconnected")
                 break
             else:
-                print("Received: ", reply)
+                if player == 1:
+                    reply = pos[0]
+                else:
+                    reply = pos[1]
+
+                print("Received: ", data)
                 print("Sending : ", reply)
 
-            conn.sendall(str.encode(reply))
+            conn.sendall(str.encode(make_pos(reply)))
         except:
             break
 
     print("Lost connection")
     conn.close()
 
-
+currentPlayer = 0
 while True:
     conn, addr = s.accept()
     print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn,))
+    start_new_thread(threaded_client, (conn, currentPlayer))
+    currentPlayer += 1
